@@ -94,7 +94,7 @@ def leer_pdf(ruta_pdf):
         return ""
 
 # Ruta fija del PDF
-RUTA_PDF = "DDAW1.pdf"
+RUTA_PDF = "APDAEMMA.pdf"
 
 # Cargar el PDF al iniciar la aplicación
 if "pdf_text" not in st.session_state:
