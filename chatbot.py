@@ -128,7 +128,7 @@ with col1:
         1. Responde EXCLUSIVAMENTE con información que puedas encontrar literalmente en el texto proporcionado
         2. Si la pregunta no puede responderse con el documento, di: "No cuento con esa respuesta. Por favor consulta a tu tutor."
         3. No inventes información bajo ninguna circunstancia
-        4. Cita la página relevante cuando sea posible
+        #4. Cita la página relevante cuando sea posible
 
         CONTENIDO DEL DOCUMENTO:
         {st.session_state.pdf_text[:30000]}
