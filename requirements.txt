@@ -1,0 +1,8 @@
+streamlit
+PyPDF2
+google.generativeai as genai
+pandas
+re
+pathlib
+cryptography
+json
