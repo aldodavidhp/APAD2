@@ -15,234 +15,180 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Configuración de Gemini
+# --- Configuración Gemini ---
 genai.configure(api_key="AIzaSyAtsIgmN8GWnuy-tUhPIt9odwouOvMuujc")
 model = genai.GenerativeModel('gemini-1.5-flash')
 
-# --- Estilos CSS personalizados ---
+# --- Estilos CSS mejorados ---
 st.markdown("""
 <style>
-    /* Estilo principal */
-    .main {
-        max-width: 1200px;
-    }
-    
-    /* Campo CURP más amplio */
-    .curp-input-container {
-        width: 100% !important;
-    }
-    .curp-input input {
-        font-size: 18px !important;
-        padding: 15px !important;
-        width: 100% !important;
-    }
-    
-    /* Resto de estilos... */
     .header-gradient {
         background: linear-gradient(135deg, #6e48aa 0%, #9d50bb 100%);
         color: white;
-        padding: 20px;
+        padding: 1.5rem;
         border-radius: 10px;
-        margin-bottom: 20px;
+        margin-bottom: 1.5rem;
         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
-    
-    .chat-container {
-        height: calc(100vh - 250px);
-        overflow-y: auto;
-        padding: 20px;
-        background-color: #ffffff;
-        border-radius: 15px;
-        margin-right: 20px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        border: 1px solid #e0e0e0;
+    .curp-input input {
+        font-size: 1.1rem !important;
+        padding: 0.8rem !important;
+        width: 100% !important;
+        border: 2px solid #6e48aa !important;
     }
-    
-    /* ... (mantén los otros estilos igual) ... */
+    .email-result {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+        padding: 1.2rem;
+        border-radius: 10px;
+        margin-top: 1.5rem;
+    }
+    /* ... (otros estilos se mantienen igual) ... */
 </style>
 """, unsafe_allow_html=True)
 
-# --- Cargar datos encriptados ---
+# --- Función mejorada para cargar datos encriptados ---
 @st.cache_data
 def cargar_datos_curp():
     try:
         cipher = Fernet(st.secrets.db.encryption_key)
         datos_descifrados = cipher.decrypt(st.secrets.db.encrypted_data.encode())
-        return pd.DataFrame(json.loads(datos_descifrados))
+        datos_dict = json.loads(datos_descifrados)
+        
+        # Convertir a formato adecuado para DataFrame
+        if isinstance(datos_dict, dict):
+            # Si los datos son {CURP: email}
+            if all(isinstance(v, str) for v in datos_dict.values()):
+                data = [{"CURP": k, "email": v} for k, v in datos_dict.items()]
+            # Si los datos ya están en formato lista
+            elif isinstance(next(iter(datos_dict.values())), dict):
+                data = [{"CURP": k, **v} for k, v in datos_dict.items()]
+            return pd.DataFrame(data)
+        
+        raise ValueError("Formato de datos no reconocido")
+        
     except Exception as e:
         st.error(f"Error al cargar datos: {str(e)}")
         return pd.DataFrame(columns=['CURP', 'email'])
 
 df_curps = cargar_datos_curp()
 
-# --- Validación de CURP Mexicano ---
+# --- Validación de CURP Mexicano (mejorada) ---
 def validar_curp_mexicano(curp):
-    pattern = re.compile(r"^[A-Z]{4}\d{6}[HM][A-Z]{5}[A-Z0-9]{2}$")
+    if not isinstance(curp, str) or len(curp) != 18:
+        return False
+    pattern = re.compile(r"^[A-Z]{4}\d{6}[HM][A-Z]{5}[A-Z0-9]\d$")
     return bool(pattern.match(curp))
 
-# --- Leer PDF desde ubicación fija ---
+# --- Lectura de PDF con manejo de errores mejorado ---
 def leer_pdf(ruta_pdf):
     try:
         with open(ruta_pdf, 'rb') as file:
             pdf_reader = PyPDF2.PdfReader(file)
-            text = ""
-            for page in pdf_reader.pages:
-                text += page.extract_text() or ""
-            return text
+            return "\n".join(
+                page.extract_text() or f"<Página {i+1} sin texto>" 
+                for i, page in enumerate(pdf_reader.pages)
+            )
     except Exception as e:
-        st.error(f"Error al leer el PDF: {e}")
+        st.error(f"Error al leer PDF: {str(e)}")
         return ""
 
-# Ruta fija del PDF
-RUTA_PDF = "APDAEMMA.pdf"
-
-# Cargar el PDF al iniciar la aplicación
+# --- Carga inicial del PDF ---
 if "pdf_text" not in st.session_state:
-    st.session_state.pdf_text = leer_pdf(RUTA_PDF)
+    st.session_state.pdf_text = leer_pdf("DDAW1.pdf")
 
-# --- Estructura principal de la aplicación ---
+# --- Interfaz Principal ---
 st.markdown("""
 <div class="header-gradient">
-    <h1 style="color:white; margin:0;">ChatDoc + CURP Finder</h1>
-    <p style="color:white; margin:0;">Sistema integrado de consulta documental y búsqueda por CURP</p>
+    <h1 style="margin:0;">ChatDoc + CURP Finder</h1>
+    <p style="margin:0;">Sistema integrado de consulta documental</p>
 </div>
 """, unsafe_allow_html=True)
 
 col1, col2 = st.columns([3, 1])
 
-# Columna principal (chat)
+# --- Columna de Chat ---
 with col1:
-    st.markdown("### 💬 Chat con Documento")
+    st.subheader("💬 Chat con Documento")
     
-    # Contenedor del chat
-    chat_container = st.container()
-    
-    # Inicializar historial de chat
+    # Historial de chat
     if "messages" not in st.session_state:
         st.session_state.messages = []
     
-    # Mostrar mensajes en el contenedor
-    with chat_container:
-        for message in st.session_state.messages:
-            if message["role"] == "user":
-                st.markdown(f"<div class='user-message'>{message['content']}</div>", unsafe_allow_html=True)
-            else:
-                st.markdown(f"<div class='assistant-message'>{message['content']}</div>", unsafe_allow_html=True)
+    for msg in st.session_state.messages:
+        st.chat_message(msg["role"]).write(msg["content"])
+    
+    # Input de chat
+    if prompt := st.chat_input("Escribe tu pregunta..."):
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        
+        try:
+            response = model.generate_content(
+                f"Documento:\n{st.session_state.pdf_text[:30000]}\n\nPregunta: {prompt}"
+            )
+            respuesta = response.text
+        except Exception as e:
+            respuesta = f"⚠️ Error: {str(e)}"
+        
+        st.session_state.messages.append({"role": "assistant", "content": respuesta})
+        st.rerun()
 
-    # Input del chat (posición fija)
-    if prompt := st.chat_input("Escribe tu pregunta sobre el documento..."):
-        if not st.session_state.pdf_text:
-            st.error("No se pudo cargar el documento PDF")
-        else:
-            # Agregar mensaje del usuario
-            st.session_state.messages.append({"role": "user", "content": prompt})
-            
-            # Crear contexto con el PDF
-            contexto = f"""
-            Basándote estrictamente en el siguiente documento, responde la pregunta del usuario.
-            Si la información no se encuentra en el documento, indica claramente que no está disponible.
-
-            CONTENIDO DEL DOCUMENTO:
-            {st.session_state.pdf_text[:30000]}
-
-            PREGUNTA DEL USUARIO:
-            {prompt}
-            """
-            
-            # Obtener respuesta de Gemini
-            with st.spinner("Procesando tu pregunta..."):
-                try:
-                    response = model.generate_content(contexto)
-                    respuesta = response.text
-                except Exception as e:
-                    respuesta = f"Error al generar respuesta: {str(e)}"
-            
-            # Agregar respuesta al historial
-            st.session_state.messages.append({"role": "assistant", "content": respuesta})
-            st.rerun()
-
-# Columna lateral (búsqueda por CURP)
+# --- Columna de Búsqueda ---
 with col2:
-    st.markdown("""
-    <div class="curp-section">
-        <h3>🔍 Buscador de CURP</h3>
-        <p>Ingresa un CURP válido para encontrar el correo asociado</p>
-    </div>
-    """, unsafe_allow_html=True)
+    st.subheader("🔍 Buscador de CURP")
     
-    # Contenedor especial para el input más grande
-    st.markdown('<div class="curp-input-container">', unsafe_allow_html=True)
-    curp_buscar = st.text_input(
-        "Ingresa el CURP:",
+    curp = st.text_input(
+        "Ingresa CURP:", 
         max_chars=18,
-        placeholder="Ejemplo: PEMJ920313HDFLRN01",
-        key="curp_input",
-        label_visibility="collapsed"
-    ).strip().upper()
-    st.markdown('</div>', unsafe_allow_html=True)
+        placeholder="Ej: PEMJ920313HDFLRN01",
+        key="curp_input"
+    ).upper()
     
-    if st.button("Buscar Correo", key="buscar_email"):
-        if not curp_buscar:
-            st.error("🚫 Por favor ingresa un CURP")
-        elif not validar_curp_mexicano(curp_buscar):
-            st.error("❌ Formato de CURP inválido para México")
+    if st.button("Buscar", type="primary"):
+        if not curp:
+            st.warning("Ingresa un CURP")
+        elif not validar_curp_mexicano(curp):
+            st.error("CURP inválido")
         else:
-            resultado = df_curps[df_curps['CURP'].str.upper() == curp_buscar]
-            
+            resultado = df_curps[df_curps['CURP'].str.upper() == curp]
             if not resultado.empty:
                 email = resultado.iloc[0]['email']
                 st.markdown(f"""
                 <div class="email-result">
-                    <i class="fas fa-envelope"></i> Correo encontrado:<br>
-                    <code style="background: rgba(255,255,255,0.2); padding: 5px 10px; border-radius: 5px;">{email}</code>
+                    Correo encontrado:<br>
+                    <strong>{email}</strong>
                 </div>
                 """, unsafe_allow_html=True)
             else:
-                st.error("🔍 No se encontró ningún registro con ese CURP")
+                st.warning("CURP no encontrado")
 
-# --- Sidebar con información adicional ---
+# --- Sidebar ---
 with st.sidebar:
-    st.markdown("""
-    <div style="text-align:center; margin-bottom:20px;">
-        <h3>🤖 Sistema Integrado</h3>
-        <p>Chat con documentos y búsqueda por CURP</p>
-    </div>
-    """)
-    
-    st.markdown("""
-    ### 📋 Instrucciones
-    1. **Chat con Documento**:
-       - Haz preguntas sobre el contenido del PDF
-       - Las respuestas se generan automáticamente
-    
-    2. **Buscador CURP**:
-       - Ingresa un CURP válido mexicano
-       - Recupera el correo asociado
-    """)
-    
-    if st.button("🧹 Limpiar Chat", key="limpiar_chat", use_container_width=True):
+    st.title("Configuración")
+    if st.button("🧹 Limpiar Chat"):
         st.session_state.messages = []
         st.rerun()
+    
+    st.info("""
+    ### Instrucciones:
+    1. Chatea con el documento PDF
+    2. Busca correos con CURP válidos
+    """)
 
-# --- Para preparar los datos encriptados ---
-# Ejecutar solo una vez localmente para generar los datos encriptados
-if st.secrets.get("db", {}).get("encryption_key") is None and st.secrets.get("db", {}).get("encrypted_data") is None:
-    if st.checkbox("Mostrar opciones de desarrollo (solo para administradores)"):
-        if st.button("Generar datos encriptados de ejemplo"):
-            from cryptography.fernet import Fernet
+# --- Sección de desarrollo (solo visible localmente) ---
+if st.secrets.get("db", {}).get("encryption_key") is None:
+    if st.toggle("Mostrar herramientas de desarrollo"):
+        st.warning("Esta sección solo es visible localmente")
+        if st.button("Generar datos de ejemplo"):
             key = Fernet.generate_key()
             cipher = Fernet(key)
-            
-            # Datos de ejemplo
             data = {
-                'CURP': ['PEMJ920313HDFLRN01', 'ROGG850621MDFMNS02', 'VACJ880430HDFLZP02'],
-                'email': ['juan.perez@ejemplo.com', 'maria.garcia@ejemplo.com', 'carlos.lopez@ejemplo.com']
+                "XXXJ920313HDFLRN01": "ejemplo1@correo.com",
+                "YYYG850621MDFMNS02": "ejemplo2@correo.com"
             }
-            
             encrypted = cipher.encrypt(json.dumps(data).encode())
-            
             st.code(f"""
-            # Agrega esto a secrets.toml
+            # secrets.toml
             [db]
             encryption_key = "{key.decode()}"
             encrypted_data = "{encrypted.decode()}"
