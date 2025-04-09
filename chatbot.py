@@ -101,16 +101,15 @@ if "pdf_text" not in st.session_state:
     st.session_state.messages = [
         {
             "role": "assistant",
-            "content": "¡Hola! Soy tu tutor virtual de la formación DDAW. Puedes consultarme cualquier "
-                      "duda sobre el material del curso. Si la información no está en los documentos, "
-                      "te indicaré que consultes con tu tutor humano."
+            "content": "¡Hola! Soy tu tutor virtual de la formación Puedes consultarme cualquier "
+                      "duda sobre el material del curso."
         }
     ]
 
 # --- Interfaz Principal ---
 st.markdown("""
 <div class="header-gradient">
-    <h1 style="margin:0;">Tutor Virtual - Formación DDAW</h1>
+    <h1 style="margin:0;">Tutor Virtual - Formación APDA</h1>
     <p style="margin:0;">Sistema de consulta académica y gestión de alumnos</p>
 </div>
 """, unsafe_allow_html=True)
@@ -134,14 +133,14 @@ with col1:
         
         # Contexto mejorado con instrucciones específicas
         contexto = f"""
-        Eres un tutor virtual para la formación DDAW. 
+        Eres un tutor virtual para la formación. 
         El documento proporcionado contiene el material del curso.
         
         INSTRUCCIONES:
         1. Responde ÚNICAMENTE con información que puedas encontrar en el documento
         2. Sé claro y conciso
         3. Si la pregunta no está relacionada con el curso, indica que solo puedes responder sobre la formación
-        4. Si no encuentras la información, di que consultes al tutor humano
+        4. Si no encuentras la información, di que consultes al tutor
         
         DOCUMENTO:
         {st.session_state.pdf_text[:30000]}
