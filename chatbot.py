@@ -7,9 +7,9 @@ from pathlib import Path
 from cryptography.fernet import Fernet
 import json
 
-# Configuración de la página (modo ancho)
+# Configuración de la página
 st.set_page_config(
-    page_title="Tutor Virtual - Formación DDAW",
+    page_title="Tutor Virtual - Formación APDA",
     page_icon="🎓",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -19,7 +19,7 @@ st.set_page_config(
 genai.configure(api_key="AIzaSyAtsIgmN8GWnuy-tUhPIt9odwouOvMuujc")
 model = genai.GenerativeModel('gemini-1.5-flash')
 
-# --- Estilos CSS mejorados ---
+# --- Estilos CSS ---
 st.markdown("""
 <style>
     .header-gradient {
@@ -29,25 +29,16 @@ st.markdown("""
         border-radius: 10px;
         margin-bottom: 1.5rem;
     }
-    .big-curp-input input {
-        font-size: 1.2rem !important;
-        padding: 12px 15px !important;
-        height: 50px !important;
-        width: 100% !important;
-    }
-    .email-result-container {
-        background: linear-gradient(135deg, #2980b9 0%, #2c3e50 100%);
-        color: white;
-        padding: 1.5rem;
-        border-radius: 10px;
-        margin-top: 1.5rem;
-    }
     .tutor-message {
         background-color: #e3f2fd;
         padding: 1rem;
         border-radius: 10px;
         margin-bottom: 1rem;
         border-left: 5px solid #3498db;
+    }
+    .pdf-warning {
+        color: #e74c3c;
+        font-weight: bold;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -60,57 +51,57 @@ def cargar_datos_curp():
         datos_descifrados = cipher.decrypt(st.secrets.db.encrypted_data.encode())
         datos_dict = json.loads(datos_descifrados)
         
-        # Conversión robusta a DataFrame
         if isinstance(datos_dict, dict):
-            # Caso 1: Diccionario simple {CURP: email}
-            if all(isinstance(v, str) for v in datos_dict.values()):
-                return pd.DataFrame({
-                    'CURP': list(datos_dict.keys()),
-                    'email': list(datos_dict.values())
-                })
-            # Caso 2: Diccionario con estructura compleja
-            else:
-                return pd.DataFrame.from_dict(datos_dict, orient='index').reset_index()
-        
-        raise ValueError("Formato de datos no reconocido")
-        
+            return pd.DataFrame({
+                'CURP': list(datos_dict.keys()),
+                'email': list(datos_dict.values())
+            })
+            
     except Exception as e:
         st.error(f"Error al cargar datos: {str(e)}")
-        return pd.DataFrame(columns=['CURP', 'email'])
+    return pd.DataFrame(columns=['CURP', 'email'])
 
 df_curps = cargar_datos_curp()
 
-# --- Validación de CURP Mexicano ---
-def validar_curp_mexicano(curp):
-    pattern = re.compile(r"^[A-Z]{4}\d{6}[HM][A-Z]{5}[A-Z0-9]{2}$")
-    return bool(pattern.match(curp))
+# --- Validación de CURP ---
+def validar_curp(curp):
+    return bool(re.match(r"^[A-Z]{4}\d{6}[HM][A-Z]{5}[A-Z0-9]{2}$", curp))
 
-# --- Leer PDF ---
-def leer_pdf(ruta_pdf):
+# --- Leer PDF con verificación ---
+def cargar_pdf(ruta_pdf):
     try:
         with open(ruta_pdf, 'rb') as file:
             pdf_reader = PyPDF2.PdfReader(file)
-            return "\n".join(page.extract_text() or "" for page in pdf_reader.pages)
+            text = ""
+            for page in pdf_reader.pages:
+                page_text = page.extract_text()
+                if page_text:
+                    text += f"--- Página {len(pdf_reader.pages)} ---\n{page_text}\n\n"
+            return text
     except Exception as e:
-        st.error(f"Error al leer PDF: {str(e)}")
-        return ""
+        st.error(f"Error al cargar PDF: {str(e)}")
+        return None
 
-# --- Carga inicial ---
+# --- Inicialización ---
 if "pdf_text" not in st.session_state:
-    st.session_state.pdf_text = leer_pdf("APDAEMMA.pdf")
-    st.session_state.messages = [
-        {
-            "role": "assistant",
-            "content": "¡Hola! Soy tu tutor virtual de la formación Puedes consultarme cualquier "
-                      "duda sobre el material del curso."
-        }
-    ]
+    pdf_content = cargar_pdf("APDAEMMA.pdf")
+    if pdf_content is None:
+        st.error("No se pudo cargar el documento PDF. Contacta al administrador.")
+        st.stop()
+    
+    st.session_state.pdf_text = pdf_content
+    st.session_state.messages = [{
+        "role": "assistant",
+        "content": "¡Hola! Soy tu tutor virtual para la formación APDA. "
+                   "Puedes preguntarme cualquier duda sobre el material del curso. "
+                   "Mis respuestas se basarán estrictamente en el documento proporcionado."
+    }]
 
 # --- Interfaz Principal ---
 st.markdown("""
 <div class="header-gradient">
     <h1 style="margin:0;">Tutor Virtual - Formación APDA</h1>
-    <p style="margin:0;">Sistema de consulta académica y gestión de alumnos</p>
+    <p style="margin:0;">Consulta académica basada en documentos</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -118,100 +109,88 @@ col1, col2 = st.columns([3, 1])
 
 # --- Columna de Chat ---
 with col1:
-    st.subheader("💬 Tutor Virtual")
+    st.subheader("💬 Consulta el Documento")
     
-    # Mostrar historial de chat
     for msg in st.session_state.messages:
         if msg["role"] == "assistant":
             st.markdown(f'<div class="tutor-message">{msg["content"]}</div>', unsafe_allow_html=True)
         else:
             st.chat_message(msg["role"]).write(msg["content"])
     
-    # Input de chat
-    if prompt := st.chat_input("Escribe tu pregunta sobre la formación..."):
+    if prompt := st.chat_input("Escribe tu pregunta sobre el documento..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         
-        # Contexto mejorado con instrucciones específicas
+        # Contexto estricto para Gemini
         contexto = f"""
-        Eres un tutor virtual para la formación. 
-        El documento proporcionado contiene el material del curso.
-        
-        INSTRUCCIONES:
-        1. Responde ÚNICAMENTE con información que puedas encontrar en el documento
-        2. Sé claro y conciso
-        3. Si la pregunta no está relacionada con el curso, indica que solo puedes responder sobre la formación
-        4. Si no encuentras la información, di que consultes al tutor
-        
-        DOCUMENTO:
+        Eres un asistente académico especializado en responder preguntas sobre un documento específico.
+        Documento actual: APDAEMMA.pdf
+        Reglas estrictas:
+        1. Responde EXCLUSIVAMENTE con información que puedas encontrar literalmente en el texto proporcionado
+        2. Si la pregunta no puede responderse con el documento, di: "No encuentro esta información en el documento. Por favor consulta con tu tutor."
+        3. No inventes información bajo ninguna circunstancia
+        4. Cita la página relevante cuando sea posible
+
+        CONTENIDO DEL DOCUMENTO:
         {st.session_state.pdf_text[:30000]}
-        
-        PREGUNTA:
+
+        PREGUNTA DEL USUARIO:
         {prompt}
         """
         
-        with st.spinner("Buscando en el material..."):
+        with st.spinner("Analizando el documento..."):
             try:
-                response = model.generate_content(contexto)
+                response = model.generate_content(
+                    contexto,
+                    generation_config={"temperature": 0.2}  # Reduce creatividad
+                )
                 respuesta = response.text
+                
+                # Verificación adicional
+                if "no encuentro" in respuesta.lower() or "no aparece" in respuesta.lower():
+                    respuesta = "No encuentro esta información en el documento. Por favor consulta con tu tutor."
+                
             except Exception as e:
-                respuesta = f"Error al procesar tu consulta: {str(e)}"
+                respuesta = "Ocurrió un error al procesar tu consulta. Intenta nuevamente."
         
         st.session_state.messages.append({"role": "assistant", "content": respuesta})
         st.rerun()
 
 # --- Columna de Búsqueda ---
 with col2:
-    st.subheader("📋 Buscador de Alumnos")
+    st.subheader("📋 Buscar Alumno")
     
-    st.markdown('<div class="big-curp-input">', unsafe_allow_html=True)
     curp = st.text_input(
-        "Ingresa CURP del alumno:", 
+        "Ingresa CURP:", 
         max_chars=18,
         placeholder="Ejemplo: PEMJ920313HDFLRN01",
-        key="curp_input",
-        label_visibility="collapsed"
+        key="curp_input"
     ).upper()
-    st.markdown('</div>', unsafe_allow_html=True)
     
-    if st.button("Buscar Correo", type="primary", use_container_width=True):
+    if st.button("Buscar", type="primary"):
         if not curp:
-            st.warning("Por favor ingresa un CURP")
-        elif not validar_curp_mexicano(curp):
-            st.error("Formato de CURP inválido")
+            st.warning("Ingresa un CURP válido")
+        elif not validar_curp(curp):
+            st.error("Formato de CURP incorrecto")
         else:
             resultado = df_curps[df_curps['CURP'].str.upper() == curp]
-            
             if not resultado.empty:
                 email = resultado.iloc[0]['email']
-                st.markdown(f"""
-                <div class="email-result-container">
-                    <div>Correo institucional:</div>
-                    <div style="font-size:1.3rem; font-weight:bold; margin-top:0.5rem;">{email}</div>
-                </div>
-                """, unsafe_allow_html=True)
+                st.success(f"Correo encontrado: {email}")
             else:
-                st.error("Alumno no encontrado")
+                st.error("No se encontró el CURP")
 
 # --- Sidebar ---
 with st.sidebar:
-    st.image("https://cdn-icons-png.flaticon.com/512/3976/3976626.png", width=100)
-    st.title("Información")
-    
+    st.title("ℹ️ Instrucciones")
     st.markdown("""
-    ### Instrucciones:
-    1. Haz preguntas sobre la formación
-    2. Busca alumnos por CURP
-    
-    ### Características:
-    - Respuestas basadas en el material oficial
-    - Búsqueda segura de información
+    1. Haz preguntas sobre el contenido del documento
+    2. Las respuestas son basadas estrictamente en el PDF
+    3. Para búsquedas de alumnos, usa el panel derecho
     """)
     
-    if st.button("🔄 Reiniciar Conversación", use_container_width=True):
-        st.session_state.messages = [
-            {
-                "role": "assistant", 
-                "content": "¡Hola! Soy tu tutor virtual. ¿En qué puedo ayudarte hoy con la formación?"
-            }
-        ]
+    if st.button("Reiniciar Chat"):
+        st.session_state.messages = [{
+            "role": "assistant",
+            "content": "¿En qué puedo ayudarte con el documento hoy?"
+        }]
         st.rerun()
