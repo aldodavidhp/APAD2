@@ -137,12 +137,26 @@ with col1:
 with col2:
     st.subheader("🔍 Buscador de CURP")
     
+    st.markdown("""
+    <style>
+        .big-curp-input {
+            width: 100% !important;
+        }
+        .big-curp-input input {
+            font-size: 1.2rem !important;
+            padding: 12px !important;
+            height: 50px !important;
+        }
+    </style>
+    """, unsafe_allow_html=True)    
     curp = st.text_input(
         "Ingresa CURP:", 
         max_chars=18,
         placeholder="Ej: PEMJ920313HDFLRN01",
         key="curp_input"
+        label_visibility="collapsed"
     ).upper()
+    st.markdown('<div class="big-curp-input"></div>', unsafe_allow_html=True)
     
     if st.button("Buscar", type="primary"):
         if not curp:
