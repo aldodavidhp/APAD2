@@ -100,8 +100,8 @@ if "pdf_text" not in st.session_state:
 # --- Interfaz Principal ---
 st.markdown("""
 <div class="header-gradient">
-    <h1 style="margin:0;">ChatDoc + CURP Finder</h1>
-    <p style="margin:0;">Sistema integrado de consulta documental</p>
+    <h1 style="margin:0;">Convocatoria Acoso escolar: Prevención, Detección y Actuación</h1>
+    <p style="margin:0;">Obtén respuestas con nuestro asistente en línea</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -109,7 +109,7 @@ col1, col2 = st.columns([3, 1])
 
 # --- Columna de Chat ---
 with col1:
-    st.subheader("💬 Chat con Documento")
+    st.subheader("💬 Consulta tus dudas sobre la formación")
     
     # Historial de chat
     if "messages" not in st.session_state:
@@ -135,7 +135,7 @@ with col1:
 
 # --- Columna de Búsqueda ---
 with col2:
-    st.subheader("🔍 Buscador de CURP")
+    st.subheader("🔍 Ingresa tu CURP para ver el correo con el que te inscribiste")
     
     st.markdown("""
     <style>
