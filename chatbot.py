@@ -97,7 +97,7 @@ def leer_pdf(ruta_pdf):
 
 # --- Carga inicial ---
 if "pdf_text" not in st.session_state:
-    st.session_state.pdf_text = leer_pdf("DDAW1.pdf")
+    st.session_state.pdf_text = leer_pdf("APDAEMMA.pdf")
     st.session_state.messages = [
         {
             "role": "assistant",
