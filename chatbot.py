@@ -167,16 +167,32 @@ with col2:
             resultado = df_curps[df_curps['CURP'].str.upper() == curp]
             if not resultado.empty:
                 email = resultado.iloc[0]['email']
-                st.markdown(f"""
-                <div class="email-result">
-                    Correo encontrado:<br>
-                    <strong>{email}</strong>
+                st.markdown("""
+                <style>
+                    .email-result-box {
+                        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+                        color: white;
+                        padding: 1.5rem;
+                        border-radius: 10px;
+                        margin: 1rem 0;
+                        font-size: 1.2rem;
+                        word-break: break-all;
+                    }
+                    .email-text {
+                        font-size: 1.3rem;
+                        font-weight: bold;
+                        margin-top: 0.5rem;
+                    }
+                </style>
+                
+                <div class="email-result-box">
+                    <div>Correo electrónico encontrado:</div>
+                    <div class="email-text">{email}</div>
                 </div>
                 """, unsafe_allow_html=True)
-            else:
-                st.warning("CURP no encontrado")
 
-# --- Sidebar ---
+            
+    # --- Sidebar ---
 with st.sidebar:
     st.title("Configuración")
     if st.button("🧹 Limpiar Chat"):
