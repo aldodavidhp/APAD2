@@ -177,17 +177,17 @@ with col2:
                 st.warning("CURP no encontrado")
 
 # --- Sidebar ---
-with st.sidebar:
-    st.title("Configuración")
-    if st.button("🧹 Limpiar Chat"):
-        st.session_state.messages = []
-        st.rerun()
+#with st.sidebar:
+ #   st.title("Configuración")
+  #  if st.button("🧹 Limpiar Chat"):
+   #     st.session_state.messages = []
+    #    st.rerun()
     
-    st.info("""
+    #st.info("""
     ### Instrucciones:
-    1. Chatea con el documento PDF
-    2. Busca correos con CURP válidos
-    """)
+    #1. Chatea con el documento PDF
+    #2. Busca correos con CURP válidos
+    #""")
 
 # --- Sección de desarrollo (solo visible localmente) ---
 if st.secrets.get("db", {}).get("encryption_key") is None:
