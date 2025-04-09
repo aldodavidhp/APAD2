@@ -93,15 +93,15 @@ if "pdf_text" not in st.session_state:
     st.session_state.messages = [{
         "role": "assistant",
         "content": "¡Hola! Soy tu tutor virtual para la formación APDA. "
-                   "Puedes preguntarme cualquier duda sobre el material del curso. "
-                   "Mis respuestas se basarán estrictamente en el documento proporcionado."
+                   "Puedes preguntarme cualquier duda sobre el curso. "
+                   "Mis respuestas se basarán estrictamente en todos los aspectos relacionados con la formación."
     }]
 
 # --- Interfaz Principal ---
 st.markdown("""
 <div class="header-gradient">
     <h1 style="margin:0;">Tutor Virtual - Formación APDA</h1>
-    <p style="margin:0;">Consulta académica basada en documentos</p>
+    <p style="margin:0;"> </p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -109,7 +109,7 @@ col1, col2 = st.columns([3, 1])
 
 # --- Columna de Chat ---
 with col1:
-    st.subheader("💬 Consulta el Documento")
+    st.subheader("💬 Consulta la información")
     
     for msg in st.session_state.messages:
         if msg["role"] == "assistant":
@@ -117,7 +117,7 @@ with col1:
         else:
             st.chat_message(msg["role"]).write(msg["content"])
     
-    if prompt := st.chat_input("Escribe tu pregunta sobre el documento..."):
+    if prompt := st.chat_input("Escribe tu pregunta..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         
         # Contexto estricto para Gemini
@@ -126,7 +126,7 @@ with col1:
         Documento actual: APDAEMMA.pdf
         Reglas estrictas:
         1. Responde EXCLUSIVAMENTE con información que puedas encontrar literalmente en el texto proporcionado
-        2. Si la pregunta no puede responderse con el documento, di: "No encuentro esta información en el documento. Por favor consulta con tu tutor."
+        2. Si la pregunta no puede responderse con el documento, di: "No cuento con esa respuesta. Por favor consulta a tu tutor."
         3. No inventes información bajo ninguna circunstancia
         4. Cita la página relevante cuando sea posible
 
@@ -137,7 +137,7 @@ with col1:
         {prompt}
         """
         
-        with st.spinner("Analizando el documento..."):
+        with st.spinner("Respondiendo..."):
             try:
                 response = model.generate_content(
                     contexto,
@@ -147,7 +147,7 @@ with col1:
                 
                 # Verificación adicional
                 if "no encuentro" in respuesta.lower() or "no aparece" in respuesta.lower():
-                    respuesta = "No encuentro esta información en el documento. Por favor consulta con tu tutor."
+                    respuesta = "No cuento con esa información. Por favor consulta con tu tutor."
                 
             except Exception as e:
                 respuesta = "Ocurrió un error al procesar tu consulta. Intenta nuevamente."
