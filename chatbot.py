@@ -9,7 +9,7 @@ import json
 
 # Configuración de la página
 st.set_page_config(
-    page_title="Tutor Virtual - Formación APDA",
+    page_title="Tutor Virtual - Formación",
     page_icon="🎓",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -157,7 +157,7 @@ with col1:
 
 # --- Columna de Búsqueda ---
 with col2:
-    st.subheader("📋 Ingresa su tu CURP para ver el correo con el que te inscribisite")
+    st.subheader("📋 Ingresa su tu CURP")
     
     curp = st.text_input(
         "Ingresa CURP:", 
@@ -183,9 +183,9 @@ with col2:
 with st.sidebar:
     st.title("ℹ️ Instrucciones")
     st.markdown("""
-    1. Haz preguntas sobre todo lo relacionado con la convocatoria Acoso escolar: Prevención, Detección y Actuación
+    1. Preguna lo relacionado con la convocatoria Acoso escolar: Prevención, Detección y Actuación
     2. Busca el correo con el que te inscribiste ingresando tu CURP en el panel derecho
-    3. Cierre este panel, si deseas ver con mayor claridad la información,
+    3. Cierre este panel, si deseas ver con mayor claridad la información
     """)
     
     if st.button("Reiniciar Chat"):
