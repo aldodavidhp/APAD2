@@ -157,7 +157,7 @@ with col1:
 
 # --- Columna de Búsqueda ---
 with col2:
-    st.subheader("📋 Buscar Alumno")
+    st.subheader("📋 Ingresa su tu CURP para ver el correo con el que te inscribisite")
     
     curp = st.text_input(
         "Ingresa CURP:", 
@@ -183,9 +183,9 @@ with col2:
 with st.sidebar:
     st.title("ℹ️ Instrucciones")
     st.markdown("""
-    1. Haz preguntas sobre el contenido del documento
-    2. Las respuestas son basadas estrictamente en el PDF
-    3. Para búsquedas de alumnos, usa el panel derecho
+    1. Haz preguntas sobre todo lo relacionado con la convocatoria Acoso escolar: Prevención, Detección y Actuación
+    2. Busca el correo con el que te inscribiste ingresando tu CURP en el panel derecho
+    3. Cierre este panel, si deseas ver con mayor claridad la información,
     """)
     
     if st.button("Reiniciar Chat"):
