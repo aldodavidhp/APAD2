@@ -100,7 +100,7 @@ if "pdf_text" not in st.session_state:
 # --- Interfaz Principal ---
 st.markdown("""
 <div class="header-gradient">
-    <h1 style="margin:0;">Tutor Virtual - Formación APDA</h1>
+    <h1 style="margin:0;">Asistente virtual - Curso Acoso escolar: prevención, detección y actuación</h1>
     <p style="margin:0;"> </p>
 </div>
 """, unsafe_allow_html=True)
