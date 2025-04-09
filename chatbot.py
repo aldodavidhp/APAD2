@@ -16,7 +16,7 @@ st.set_page_config(
 )
 
 # --- Configuración Gemini ---
-genai.configure(api_key="AIzaSyAtsIgmN8GWnuy-tUhPIt9odwouOvMuujc")
+genai.configure(api_key="AIzaSyBZjKJOdxThOmcotZRX0on6uoJnGviyK7g")
 model = genai.GenerativeModel('gemini-1.5-flash')
 
 # --- Estilos CSS ---
