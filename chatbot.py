@@ -235,7 +235,7 @@ if st.secrets.get("db", {}).get("encryption_key") is None and st.secrets.get("db
             
             # Datos de ejemplo
             data = {
-                'CURP': ['PEMJ920313HDFLRN01', 'ROGG850621MDFMNS02', 'VACJ880430HDFLZR03'],
+                'CURP': ['PEMJ920313HDFLRN01', 'ROGG850621MDFMNS02', 'VACJ880430HDFLZP02'],
                 'email': ['juan.perez@ejemplo.com', 'maria.garcia@ejemplo.com', 'carlos.lopez@ejemplo.com']
             }
             
