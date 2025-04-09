@@ -183,7 +183,7 @@ with col2:
 with st.sidebar:
     st.title("ℹ️ Instrucciones")
     st.markdown("""
-    1. Preguna lo relacionado con la convocatoria Acoso escolar: Prevención, Detección y Actuación
+    1. Pregunta lo relacionado con la convocatoria Acoso escolar: Prevención, Detección y Actuación
     2. Busca el correo con el que te inscribiste ingresando tu CURP en el panel derecho
     3. Cierre este panel, si deseas ver con mayor claridad la información
     """)
