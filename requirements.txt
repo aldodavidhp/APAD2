@@ -1,6 +1,6 @@
 streamlit
 PyPDF2
-google.generativeai as genai
+google.generativeai
 pandas
 re
 pathlib
