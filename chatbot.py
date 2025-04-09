@@ -153,7 +153,7 @@ with col2:
         "Ingresa CURP:", 
         max_chars=18,
         placeholder="Ej: PEMJ920313HDFLRN01",
-        key="curp_input"
+        key="curp_input",
         label_visibility="collapsed"
     ).upper()
     st.markdown('<div class="big-curp-input"></div>', unsafe_allow_html=True)
