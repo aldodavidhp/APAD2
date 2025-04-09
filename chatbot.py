@@ -58,7 +58,22 @@ def cargar_datos_curp():
     try:
         cipher = Fernet(st.secrets.db.encryption_key)
         datos_descifrados = cipher.decrypt(st.secrets.db.encrypted_data.encode())
-        return pd.DataFrame(json.loads(datos_descifrados))
+        datos_dict = json.loads(datos_descifrados)
+        
+        # Conversión robusta a DataFrame
+        if isinstance(datos_dict, dict):
+            # Caso 1: Diccionario simple {CURP: email}
+            if all(isinstance(v, str) for v in datos_dict.values()):
+                return pd.DataFrame({
+                    'CURP': list(datos_dict.keys()),
+                    'email': list(datos_dict.values())
+                })
+            # Caso 2: Diccionario con estructura compleja
+            else:
+                return pd.DataFrame.from_dict(datos_dict, orient='index').reset_index()
+        
+        raise ValueError("Formato de datos no reconocido")
+        
     except Exception as e:
         st.error(f"Error al cargar datos: {str(e)}")
         return pd.DataFrame(columns=['CURP', 'email'])
