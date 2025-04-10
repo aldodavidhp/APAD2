@@ -92,9 +92,9 @@ if "pdf_text" not in st.session_state:
     st.session_state.pdf_text = pdf_content
     st.session_state.messages = [{
         "role": "assistant",
-        "content": "¡Hola! Soy tu tutor virtual para la formación APDA. "
-                   "Puedes preguntarme cualquier duda sobre el curso. "
-                   "Mis respuestas se basarán estrictamente en todos los aspectos relacionados con la formación."
+        "content": "¡¡Hola! Soy un asistente virtual para el curso de Acoso escolar: prevención, detección y actuación."
+                   "Puedes preguntarme cualquier duda sobre el curso."
+                   "Mis respuestas se basarán estrictamente en todos los aspectos relacionados con esta formación."
     }]
 
 # --- Interfaz Principal ---
@@ -157,7 +157,7 @@ with col1:
 
 # --- Columna de Búsqueda ---
 with col2:
-    st.subheader("📋 Ingresa su tu CURP")
+    st.subheader("📋 Ingresa TU CURP si deseas conocer con qué correo estás registrado(a)")
     
     curp = st.text_input(
         "Ingresa CURP:", 
