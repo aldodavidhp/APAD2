@@ -157,7 +157,7 @@ with col1:
 
 # --- Columna de Búsqueda ---
 with col2:
-    st.subheader("📋 Ingresa TU CURP si deseas conocer con qué correo estás registrado(a)")
+    st.subheader("📋Ingresa tu CURP para conocer con qué correo estás inscrito")
     
     curp = st.text_input(
         "Ingresa CURP:", 
